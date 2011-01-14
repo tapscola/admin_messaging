@@ -1,5 +1,5 @@
 ; $Id$
-name = "Email Users"
+name = "Admin Messaging"
 description = "Email a user from within the user administration screen."
 core = 6.x
 php = 5.1

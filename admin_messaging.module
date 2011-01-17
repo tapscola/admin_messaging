@@ -22,6 +22,14 @@ function admin_messaging_help($path, $arg) {
         return '<p>'.t($txt).'</p>';
     }
 }
+
+/**
+ * Implementation of hook_perm().
+ */
+function admin_messaging_perm() {
+  return array('administer admin_messaging', 'send email to users');
+}
+
 /**
 * Implementation of hook_menu()
 */
@@ -92,151 +100,53 @@ function admin_messaging_compose_form($context, $account) {
         '#required' => true,
         '#description' => t('The body of the message.'),
     );
-    // Creates a fieldset for details
-    $form['details'] = array(
-        '#type' => 'fieldset',
-        '#title' => t("Details"),
-    );
     // Creates a fieldset for sending options
-$form['method'] = array (
-  '#type' => 'select' ,
-  '#title' => t('Select Sending Method') ,
-   '#rows' => 5 ,
-  '#options' => messaging_method_list(),//the option list called from the messaging list, alternate '#options' => array(email => 'Email', web => 'Web') ),
-  '#default_value' => messaging_method_default(),
-) ;
-    // Checkbox: if checked, CC the author, too.
-    $form['details']['cc_me'] = array(
-        '#type' => 'checkbox',
-        '#title' => t('BCC Yourself'),
-        '#default_value' => 1,
-        '#description' =>
-            t('If this is checked, the message will also be sent to you.'),
-    );
-    // submit button:
-    $form['submit'] = array(
-        '#type' => 'submit',
-        '#value' => t('Send Mail'),
-    );
-    return $form;
+	$method_list = messaging_method_list();
+	// $method_list['debug'] = 'Debug';
+	$method_list['user'] = 'User Prefered';
+	$form['method'] = array (
+		'#type' => 'select' ,
+		'#title' => t('Select Sending Method') ,
+		 '#rows' => 5 ,
+		'#options' => $method_list, //the option list called from the messaging list, alternate '#options' => array(email => 'Email', web => 'Web') ),
+		'#default_value' => messaging_method_default(),
+	) ;
+  // submit button:
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Send Mail'),
+  );
+  return $form;
 }
 
 /**
  * Form submission handler for constructor function admin_messaging_compose_form()
  */
 function admin_messaging_compose_form_submit($form, &$form_state) {
-    global $user;	
-    $form_values = $form_state['values'];
-    $account = $form_values['to'];
-    $body = split("\n", $form_state['values']['body']);
-    $body = array_map('trim', $body);  
-   $message = (object)array(
-     'type' => 'debug',
-     'subject' => $form_state['values']['subject'],
-     'body' => $body,  
-   ); 
-         drupal_mail('admin_messaging', 'composemessage', $account->mail, user_preferred_language($account),
-           $form_values,
-           variable_get('site_mail', null),
-           true // Automatically send email
-	);  
-   $form_state['redirect'] = sprintf('user/%d', $account->uid);	
-  // Destination may be account or plain parameter/s
-  $destination = $form_state['values']['to'];
-  $destination = 1;
-  if ($account = user_load(array('name' => $destination))) {
-       $result = admin_messaging_user($account, $message, $form_state['values']['method']);
-        } else {
-         $result = messaging_message_send(array($destination), $message, $form_state['values']['method']);
-         }
-   drupal_set_message(t('Sent message with result: %result', array('%result' => $result ? 'OK' : 'Error'))); 
-}
-/**
- * Implementation of hook_mail()
- */
-function admin_messaging_mail($key, &$message, $params) {
-    global $user;
-    // catch calls to this hook from compose form.
-    if ($key == 'composemessage') {
-        $language = $params['language'];
-        $account = $params['to'];
-        if ($params['cc_me']) {
-            // current user's email address:
-            $my_account = $user;
-            $message['headers']['bcc'] = $my_account->mail;
-        }
-        $message['to'] = $account->mail;
-        $message['subject'] =
-            t('Message From Nojoshmo: ', array(), $language->language);
-        $message['subject'] .= $params['subject'];
-        $message['body'] = $params['body'];
-    }
-}
-
-/**
- * Implements hook_mail_alter().
- */
-function admin_messaging_mail_alter(&$message) {
-    $append = "\n \n=======================\n"
-        ."This message was sent from !site_name (!website). \n"
-        ."If you believe this message to be a case of abuse, \n"
-        ."please contact !site_email.\n";
-    $args = array(
-        '!website' => url('', array('absolute' => true)),
-        '!site_email' => variable_get('site_mail', null),
-        '!site_name' => variable_get('site_name', 'Nojoshmo'),
-    );
-    $message['body'] .= t($append, $args);
-}
-/**
- * Implementation of hook_user().
- */
-function admin_messaging_user($op, &$edit, &$account, $category) {
-    if ($op == 'view' && user_access('administer users')) {
-       // Create the outer "block"
-        $account->content['admin_messaging'] = array(
-            '#type' => 'user_profile_category',
-            '#attributes' => array('class' => 'user-member'),
-            '#weight' => 0,
-            '#title' => t('Contact This User'),
-        );
-        // Create the content of the block
-        $account->content['admin_messaging']['EmailLink'] = array(
-            '#type' => 'user_profile_item',
-            '#title' => t('Send a message to this user from the site '
-            . 'administrator.'),
-            '#value' => l(
-                'Email To User',
-                'admin/admin_messaging/compose/'. $account->uid
-            ),
-        );
-    }
-}
-/**
-* Implementation of hook_messaging()
-*/
-function admin_messaging_sms_messaging($op = 'info' , $type = NULL) {
-  switch($op) {
-    case 'send methods':
-      $info['sms'] = array(
-        'title' => t('Sms Method'),
-	'name' => t('SMS'),
-	'group' => 'sms', // Class of send method
-	'destination' => 'name',
-	'type' => MESSAGING_TYPE_PUSH,
-	'glue' => 'br />',
-	'footer' => "\n=======================\n",
-	'description' => t('Sending messages methods.'),
-	'send callback' => '',
-       );
-       return $info;
-    }
-}
-/**
- * Implementation of hook_perm().
- */
-function admin_messaging_perm() {
-  return array('administer admin_messaging', 'send email to users');
+	// print_r($form_state);
+  $account = $form_state['values']['to'];
+  $body = split("\n", $form_state['values']['body']);
+  $body = array_map('trim', $body);  
+  $message = array (
+    'type' => 'push',
+    'subject' => $form_state['values']['subject'],
+		'body' => $body,  
+  );
+	
+	// If method defined force sending method
+	if ($form_state['values']['method'] != 'user')
+		$method = $form_state['values']['method'];
+	else
+		$method = null;
+	
+	// Set redirect page
+  $form_state['redirect'] = sprintf('user/%d', $account->uid);
+	
+	// send message if user set
+  if ($account) {
+		$result = messaging_message_send_user($account, $message, $method);
+	}
+   drupal_set_message(t('Sent message with result: %result', array('%result' => $result ? 'OK' : 'Error'))); /**/
 }
 
 

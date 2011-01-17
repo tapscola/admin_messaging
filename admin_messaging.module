@@ -80,6 +80,7 @@ function admin_messaging_compose_form($context, $account) {
         '#title' => t('Subject'),
         '#size' => 50,
         '#maxlengh' => 255,
+        '#required' => true,
         '#description' => t('The subject of the message.'),
     );
     // Text area for the body.
@@ -88,6 +89,7 @@ function admin_messaging_compose_form($context, $account) {
         '#title' => t('Message'),
         '#cols' => 50,
         '#rows' => 5,
+        '#required' => true,
         '#description' => t('The body of the message.'),
     );
     // Creates a fieldset for details

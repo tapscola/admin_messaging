@@ -10,6 +10,9 @@
 /**
  * implementation of hook_help()
  */
+ // Method with push delivery. Messages will be pushed to the user using messaging sending methods.
+define('MESSAGING_TYPE_PUSH', 1);
+
 function admin_messaging_help($path, $arg) {
     if ($path == 'admin/help#admin_messaging') {
         $txt = 'This module provides a way for an administrator '.
@@ -210,12 +213,13 @@ function admin_messaging_user($op, &$edit, &$account, $category) {
 /**
 * Implementation of hook_messaging()
 */
-function admin_messaging_debug_messaging($op = 'info' , $type = NULL) {
+function admin_messaging_sms_messaging($op = 'info' , $type = NULL) {
   switch($op) {
     case 'send methods':
-      $info['debug'] = array(
-        'title' => t('Debug'),
-	'name' => t('Debug'),
+      $info['sms'] = array(
+        'title' => t('Sms Method'),
+	'name' => t('SMS'),
+	'group' => 'sms', // Class of send method
 	'destination' => 'name',
 	'type' => MESSAGING_TYPE_PUSH,
 	'glue' => 'br />',

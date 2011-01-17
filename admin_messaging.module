@@ -2,7 +2,7 @@
 // $Id$
 /**
 * @file
-* This module provides an email interface for administrators.
+* This module provides messaging interface for administrators.
 * Using this module, administrators can send email to a user from the
 * user's "view" page.
 */
@@ -16,7 +16,7 @@ define('MESSAGING_TYPE_PUSH', 1);
 function admin_messaging_help($path, $arg) {
     if ($path == 'admin/help#admin_messaging') {
         $txt = 'This module provides a way for an administrator '.
-            'to send emails to user. '.
+            'to send messages to user. '.
 	    'using optional sending methods.'.
             'It assumes that Drupal mailer is configured.';
         return '<p>'.t($txt).'</p>';
@@ -27,7 +27,7 @@ function admin_messaging_help($path, $arg) {
  * Implementation of hook_perm().
  */
 function admin_messaging_perm() {
-  return array('administer admin_messaging', 'send email to users');
+  return array('administer admin_messaging', 'send messages to users');
 }
 
 /**
@@ -58,12 +58,12 @@ function admin_messaging_user($op, &$edit, &$account, $category) {
             '#title' => t('Contact This User'),
         );
         // Create the content of the block
-        $account->content['admin_messaging']['EmailLink'] = array(
+        $account->content['admin_messaging']['MessagesLink'] = array(
             '#type' => 'user_profile_item',
             '#title' => t('Send a message to this user from the site '
             . 'administrator.'),
             '#value' => l(
-                'Email To User',
+                'Admin Message',
                 'admin/admin_messaging/compose/'. $account->uid
             ),
         );
@@ -126,6 +126,7 @@ function admin_messaging_compose_form($context, $account) {
   );
   return $form;
 }
+
 /**
  * Compose a message.
  * Creating form neccessary to compose message.

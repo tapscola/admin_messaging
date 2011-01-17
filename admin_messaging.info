@@ -1,5 +1,6 @@
 ; $Id$
 name = "Admin Messaging"
 description = "Email a user from within the user administration screen."
+dependencies[] = "messaging"
 core = 6.x
 php = 5.1

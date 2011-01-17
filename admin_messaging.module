@@ -44,29 +44,32 @@ function admin_messaging_menu() {
     );
     return $items;
 }
+
 /**
- * Compose a message.
- * Creating form neccessary to compose message.
- *
- * @param $to
- *  The address to send to.
- * @return
- *  HTML.
+ * Implementation of hook_user().
  */
-function admin_messaging_compose($userid) {
-    $userid = intval($userid);
-    if ($userid == 0)
-        return t('User ID must be an integer.');
-    $account = user_load($userid);
-    if (empty($account))
-        return t('No such user found.');
-    $to = $account->mail;
-    $sb = '<p>'
-        .t('Send message to @email.', array('@email' => $to))
-        .'</p>';
-    $sb .= drupal_get_form('admin_messaging_compose_form', $account);
-    return $sb;
+function admin_messaging_user($op, &$edit, &$account, $category) {
+    if ($op == 'view' && user_access('administer users')) {
+       // Create the outer "block"
+        $account->content['admin_messaging'] = array(
+            '#type' => 'user_profile_category',
+            '#attributes' => array('class' => 'user-member'),
+            '#weight' => 0,
+            '#title' => t('Contact This User'),
+        );
+        // Create the content of the block
+        $account->content['admin_messaging']['EmailLink'] = array(
+            '#type' => 'user_profile_item',
+            '#title' => t('Send a message to this user from the site '
+            . 'administrator.'),
+            '#value' => l(
+                'Email To User',
+                'admin/admin_messaging/compose/'. $account->uid
+            ),
+        );
+    }
 }
+
 /**
  * Form constructor function with the fields interface
  */
@@ -100,9 +103,14 @@ function admin_messaging_compose_form($context, $account) {
         '#required' => true,
         '#description' => t('The body of the message.'),
     );
+    // Creates a fieldset for details
+    // $form['details'] = array(
+        // '#type' => 'fieldset',
+        // '#title' => t("Details"),
+    // );
     // Creates a fieldset for sending options
 	$method_list = messaging_method_list();
-	// $method_list['debug'] = 'Debug';
+	$method_list['debug'] = 'Debug';
 	$method_list['user'] = 'User Prefered';
 	$form['method'] = array (
 		'#type' => 'select' ,
@@ -124,6 +132,8 @@ function admin_messaging_compose_form($context, $account) {
  */
 function admin_messaging_compose_form_submit($form, &$form_state) {
 	// print_r($form_state);
+  // $acount = user_load($form_state['values']['to']->uid);
+  $form_values = $form_state['values'];
   $account = $form_state['values']['to'];
   $body = split("\n", $form_state['values']['body']);
   $body = array_map('trim', $body);  
@@ -137,7 +147,7 @@ function admin_messaging_compose_form_submit($form, &$form_state) {
 	if ($form_state['values']['method'] != 'user')
 		$method = $form_state['values']['method'];
 	else
-		$method = null;
+		$method = null;	
 	
 	// Set redirect page
   $form_state['redirect'] = sprintf('user/%d', $account->uid);
@@ -148,5 +158,6 @@ function admin_messaging_compose_form_submit($form, &$form_state) {
 	}
    drupal_set_message(t('Sent message with result: %result', array('%result' => $result ? 'OK' : 'Error'))); /**/
 }
+
 
 

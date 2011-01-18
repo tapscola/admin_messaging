@@ -35,19 +35,19 @@ function admin_messaging_perm() {
 */
 function admin_messaging_menu() {
     // User ID must pass:
-    $items['user/%user_uid_optional/admin_messaging/compose'] = array(
+    $items['admin/admin_messaging/compose/%'] = array(
         'title' => 'Compose New Message',
         'page callback' => 'admin_messaging_compose',
         'page arguments' => array(3), // <- userID (from % in node path)
         'access arguments' => array('administer users'),
         'type' => MENU_CALLBACK,
     );
-        $items['user/%user_uid_optional/admin_message'. $account->uid] = array(
-	'type' => MENU_DEFAULT_LOCAL_TASK,
-        'title' => 'Admin Message',
+        $items['user/%user/admin_message'. $account->uid] = array(
+	'type' => MENU_LOCAL_TASK,
+        'title' => t('Admin Message'),
 	'description' => t('Message Admin'),
 	'access callback' => 'admin_messaging_access',
-        'page callback' => 'admin_messaging_user',
+        'page callback' => 'admin_messaging_compose',
         'page arguments' => array(1),
         'access arguments' => array('administer users'),
        
@@ -74,7 +74,7 @@ function admin_messaging_user($op, &$edit, &$account, $category) {
             . 'administrator.'),
             '#value' => l(
                 'Admin Message',
-                'user/%user_uid_optional/admin_messaging/compose/'. $account->uid
+                'user/'. $account->uid .'/admin_message'
             ),
         );
     }
@@ -196,7 +196,7 @@ function admin_messaging_compose_form_submit($form, &$form_state) {
 /**
  * Access calback
  */
-function addmin_messaging_access($account) {
+function admin_messaging_access($account) {
   global $user;
   return $account->uid && (($account->uid == $user->uid) || user_access('administer messaging'));
 }

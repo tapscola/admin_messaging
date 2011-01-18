@@ -42,13 +42,15 @@ function admin_messaging_menu() {
         'access arguments' => array('administer users'),
         'type' => MENU_CALLBACK,
     );
-        $items['admin/admin_messaging/compose/admin_message/'. $account->uid] = array(
-        'title' =>t( 'Admin Message'),
+        $items['user/%user/admin_message'. $account->uid] = array(
+	'type' => MENU_LOCAL_TASK,
+        'title' => 'Admin Message',
 	'description' => t('Message Admin'),
+	'access callback' => 'admin_messaging_access',
         'page callback' => 'admin_messaging_user',
-        'page arguments' => array(3), // <- userID (from % in node path)
+        'page arguments' => array(1),
         'access arguments' => array('administer users'),
-        'type' => MENU_LOCAL_TASK,
+       
     );
     return $items;
 }
@@ -189,6 +191,14 @@ function admin_messaging_compose_form_submit($form, &$form_state) {
 		$result = messaging_message_send_user($account, $message, $method);
 	}
    drupal_set_message(t('Sent message with result: %result', array('%result' => $result ? 'OK' : 'Error'))); /**/
+}
+
+/**
+ * Access calback
+ */
+function addmin_messaging_access($account) {
+  global $user;
+  return $account->uid && (($account->uid == $user->uid) || user_access('administer messaging'));
 }
 
 

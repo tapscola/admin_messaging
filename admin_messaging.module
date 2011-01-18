@@ -35,12 +35,20 @@ function admin_messaging_perm() {
 */
 function admin_messaging_menu() {
     // User ID must pass:
-    $items['admin/admin_messaging/compose/%'] = array(
+    $items['user/%uid/admin_messaging/compose'] = array(
         'title' => 'Compose New Message',
         'page callback' => 'admin_messaging_compose',
         'page arguments' => array(3), // <- userID (from % in node path)
         'access arguments' => array('administer users'),
         'type' => MENU_CALLBACK,
+    );
+        $items['admin/admin_messaging/compose/admin_message/'. $account->uid] = array(
+        'title' =>t( 'Admin Message'),
+	'description' => t('Message Admin'),
+        'page callback' => 'admin_messaging_user',
+        'page arguments' => array(3), // <- userID (from % in node path)
+        'access arguments' => array('administer users'),
+        'type' => MENU_LOCAL_TASK,
     );
     return $items;
 }
@@ -155,7 +163,7 @@ function admin_messaging_compose($userid) {
  * Form submission handler for constructor function admin_messaging_compose_form()
  */
 function admin_messaging_compose_form_submit($form, &$form_state) {
-	// print_r($form_state);
+	//print_r($form_state);
   // $acount = user_load($form_state['values']['to']->uid);
   $form_values = $form_state['values'];
   $account = $form_state['values']['to'];

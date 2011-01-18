@@ -42,7 +42,7 @@ function admin_messaging_menu() {
         'access arguments' => array('administer users'),
         'type' => MENU_CALLBACK,
     );
-        $items['user/%user/admin_message'. $account->uid] = array(
+        $items['user/%user/admin_message'] = array(
 	'type' => MENU_LOCAL_TASK,
         'title' => t('Admin Message'),
 	'description' => t('Message Admin'),

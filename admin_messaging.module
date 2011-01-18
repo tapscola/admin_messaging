@@ -42,13 +42,13 @@ function admin_messaging_menu() {
         'access arguments' => array('administer users'),
         'type' => MENU_CALLBACK,
     );
-        $items['user/%user/admin_message'] = array(
+        $items['user/%user/admin_message/'] = array(
 	'type' => MENU_LOCAL_TASK,
         'title' => t('Admin Message'),
 	'description' => t('Message Admin'),
 	'access callback' => 'admin_messaging_access',
         'page callback' => 'admin_messaging_compose',
-        'page arguments' => array(1),
+        'page arguments' => array(3),
         'access arguments' => array('administer users'),
        
     );
@@ -196,10 +196,18 @@ function admin_messaging_compose_form_submit($form, &$form_state) {
 /**
  * Access calback
  */
-function admin_messaging_access($account) {
-  global $user;
-  return $account->uid && (($account->uid == $user->uid) || user_access('administer messaging'));
+function admin_messaging_access($permission = 'administer messages', $account) {
+  if ( $account === NULL ) {
+    global $user;
+    $account = $user;
+  }
+  if (!$account->uid) { // Disallow anonymous access, regardless of permissions
+    return FALSE;
+  }
+  if (!user_access($permission, $account)) {
+    return FALSE;
+  }
+  return TRUE;
 }
-
 
 

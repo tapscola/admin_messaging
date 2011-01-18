@@ -35,15 +35,15 @@ function admin_messaging_perm() {
 */
 function admin_messaging_menu() {
     // User ID must pass:
-    $items['user/%uid/admin_messaging/compose'] = array(
+    $items['user/%user_uid_optional/admin_messaging/compose'] = array(
         'title' => 'Compose New Message',
         'page callback' => 'admin_messaging_compose',
         'page arguments' => array(3), // <- userID (from % in node path)
         'access arguments' => array('administer users'),
         'type' => MENU_CALLBACK,
     );
-        $items['user/%user/admin_message'. $account->uid] = array(
-	'type' => MENU_LOCAL_TASK,
+        $items['user/%user_uid_optional/admin_message'. $account->uid] = array(
+	'type' => MENU_DEFAULT_LOCAL_TASK,
         'title' => 'Admin Message',
 	'description' => t('Message Admin'),
 	'access callback' => 'admin_messaging_access',
@@ -74,7 +74,7 @@ function admin_messaging_user($op, &$edit, &$account, $category) {
             . 'administrator.'),
             '#value' => l(
                 'Admin Message',
-                'admin/admin_messaging/compose/'. $account->uid
+                'user/%user_uid_optional/admin_messaging/compose/'. $account->uid
             ),
         );
     }

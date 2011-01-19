@@ -48,7 +48,7 @@ function admin_messaging_menu() {
 	'description' => t('Message Admin'),
 	'access callback' => 'admin_messaging_access',
         'page callback' => 'admin_messaging_compose',
-        'page arguments' => array(3),
+        'page arguments' => array(1),
         'access arguments' => array('administer users'),
        
     );
@@ -76,6 +76,7 @@ function admin_messaging_user($op, &$edit, &$account, $category) {
                 'Admin Message',
                 'user/'. $account->uid .'/admin_message'
             ),
+	    
         );
     }
 }
@@ -196,7 +197,7 @@ function admin_messaging_compose_form_submit($form, &$form_state) {
 /**
  * Access calback
  */
-function admin_messaging_access($permission = 'administer messages', $account) {
+function admin_messaging_access($permission = 'administer messages', $account = NULL) {
   if ( $account === NULL ) {
     global $user;
     $account = $user;

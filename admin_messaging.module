@@ -68,7 +68,7 @@ function admin_messaging_user($op, &$edit, &$account, $category) {
             '#title' => t('Contact This User'),
         );
         // Create the content of the block
-        $account->content['admin_messaging']['MessagesLink'] = array(
+       /** $account->content['admin_messaging']['MessagesLink'] = array(
             '#type' => 'user_profile_item',
             '#title' => t('Send a message to this user from the site '
             . 'administrator.'),
@@ -77,9 +77,10 @@ function admin_messaging_user($op, &$edit, &$account, $category) {
                 'user/'. $account->uid .'/admin_message'
             ),
 	    
-        );
+        );*/
     }
-}
+} 
+
 
 /**
  * Form constructor function with the fields interface

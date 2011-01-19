@@ -59,14 +59,14 @@ function admin_messaging_menu() {
  * Implementation of hook_user().
  */
 function admin_messaging_user($op, &$edit, &$account, $category) {
-    if ($op == 'view' && user_access('administer users')) {
+   /** if ($op == 'view' && user_access('administer users')) {
        // Create the outer "block"
         $account->content['admin_messaging'] = array(
             '#type' => 'user_profile_category',
             '#attributes' => array('class' => 'user-member'),
             '#weight' => 0,
             '#title' => t('Contact This User'),
-        );
+        ); */
         // Create the content of the block
        /** $account->content['admin_messaging']['MessagesLink'] = array(
             '#type' => 'user_profile_item',
@@ -77,8 +77,8 @@ function admin_messaging_user($op, &$edit, &$account, $category) {
                 'user/'. $account->uid .'/admin_message'
             ),
 	    
-        );*/
-    }
+        );
+    } */
 } 
 
 

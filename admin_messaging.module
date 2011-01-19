@@ -35,38 +35,38 @@ function admin_messaging_perm() {
 */
 function admin_messaging_menu() {
     // User ID must pass:
-    $items['admin/admin_messaging/compose/%'] = array(
-        'title' => 'Compose New Message',
+    //$items = array();
+    $items['user/%user/compose'] = array(
+        'title' => 'Admin Message',
         'page callback' => 'admin_messaging_compose',
-        'page arguments' => array(3), // <- userID (from % in node path)
+        'page arguments' => array(1), // <- userID (from % in node path)
         'access arguments' => array('administer users'),
-        'type' => MENU_CALLBACK,
-    );
-        $items['user/%user/admin_message/'] = array(
-	'type' => MENU_LOCAL_TASK,
-        'title' => t('Admin Message'),
-	'description' => t('Message Admin'),
-	'access callback' => 'admin_messaging_access',
-        'page callback' => 'admin_messaging_compose',
-        'page arguments' => array(1),
-        'access arguments' => array('administer users'),
-       
-    );
-    return $items;
+        'type' => MENU_LOCAL_TASK,
+    );        
+  /**$items['user/%user/admin_message'] = array(
+    'title' => 'Admin Message',
+    'description' => 'Send Admin Message To User',
+    'page callback' => 'admin_messaging_compose',
+    'page arguments' => array(3),
+    'access arguments' => array('administer users'),
+    'type' => MENU_LOCAL_TASK,
+  );*/
+
+return $items;
 }
 
 /**
  * Implementation of hook_user().
  */
 function admin_messaging_user($op, &$edit, &$account, $category) {
-   /** if ($op == 'view' && user_access('administer users')) {
+   if ($op == 'view' && user_access('administer users')) {
        // Create the outer "block"
         $account->content['admin_messaging'] = array(
             '#type' => 'user_profile_category',
             '#attributes' => array('class' => 'user-member'),
             '#weight' => 0,
             '#title' => t('Contact This User'),
-        ); */
+        ); 
         // Create the content of the block
        /** $account->content['admin_messaging']['MessagesLink'] = array(
             '#type' => 'user_profile_item',
@@ -77,10 +77,9 @@ function admin_messaging_user($op, &$edit, &$account, $category) {
                 'user/'. $account->uid .'/admin_message'
             ),
 	    
-        );
-    } */
-} 
-
+        );*/
+    } 
+}
 
 /**
  * Form constructor function with the fields interface

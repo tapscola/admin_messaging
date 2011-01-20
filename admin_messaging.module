@@ -154,7 +154,7 @@ function admin_messaging_compose($user) {
         return t('No such user found.');
     $to = $account->mail;
     $sb = '<p>'
-        .t('Send message to @email.', array('@email' => $to))
+        .t('Send message to user', array('@email' => $to))
         .'</p>';
     $sb .= drupal_get_form('admin_messaging_compose_form', $account);
     return $sb;

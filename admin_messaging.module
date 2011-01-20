@@ -80,30 +80,6 @@ function admin_messaging_user($op, &$edit, &$account, $category) {
         );*/
     } 
 }
-
-/**
- * Compose a message.
- * Creating form neccessary to compose message.
- *
- * @param $to
- *  The address to send to.
- * @return
- *  HTML.
- */
-function admin_messaging_compose($user) {
-    if ($user->uid <= 0)
-        return t('User ID must be an integer.');
-    $account = $user;
-    if (empty($account))
-        return t('No such user found.');
-    $to = $account->mail;
-    $sb = '<p>'
-        .t('Send message to @email.', array('@email' => $to))
-        .'</p>';
-    $sb .= drupal_get_form('admin_messaging_compose_form', $account);
-    return $sb;
-}
-
 /**
  * Form constructor function with the fields interface
  */
@@ -161,6 +137,28 @@ function admin_messaging_compose_form($context, $account) {
   return $form;
 }
 
+/**
+ * Compose a message.
+ * Creating form neccessary to compose message.
+ *
+ * @param $to
+ *  The address to send to.
+ * @return
+ *  HTML.
+ */
+function admin_messaging_compose($user) {
+    if ($user->uid <= 0)
+        return t('User ID must be an integer.');
+    $account = $user;
+    if (empty($account))
+        return t('No such user found.');
+    $to = $account->mail;
+    $sb = '<p>'
+        .t('Send message to @email.', array('@email' => $to))
+        .'</p>';
+    $sb .= drupal_get_form('admin_messaging_compose_form', $account);
+    return $sb;
+}
 
 /**
  * Form submission handler for constructor function admin_messaging_compose_form()

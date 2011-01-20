@@ -43,15 +43,6 @@ function admin_messaging_menu() {
         'access arguments' => array('administer users'),
         'type' => MENU_LOCAL_TASK,
     );        
-  /**$items['user/%user/admin_message'] = array(
-    'title' => 'Admin Message',
-    'description' => 'Send Admin Message To User',
-    'page callback' => 'admin_messaging_compose',
-    'page arguments' => array(3),
-    'access arguments' => array('administer users'),
-    'type' => MENU_LOCAL_TASK,
-  );*/
-
 return $items;
 }
 
@@ -65,21 +56,11 @@ function admin_messaging_user($op, &$edit, &$account, $category) {
             '#type' => 'user_profile_category',
             '#attributes' => array('class' => 'user-member'),
             '#weight' => 0,
-            '#title' => t('Contact This User'),
+            '#title' => t(''),
         ); 
-        // Create the content of the block
-       /** $account->content['admin_messaging']['MessagesLink'] = array(
-            '#type' => 'user_profile_item',
-            '#title' => t('Send a message to this user from the site '
-            . 'administrator.'),
-            '#value' => l(
-                'Admin Message',
-                'user/'. $account->uid .'/admin_message'
-            ),
-	    
-        );*/
     } 
 }
+
 /**
  * Form constructor function with the fields interface
  */
@@ -192,21 +173,5 @@ function admin_messaging_compose_form_submit($form, &$form_state) {
    drupal_set_message(t('Sent message with result: %result', array('%result' => $result ? 'OK' : 'Error'))); /**/
 }
 
-/**
- * Access calback
- */
-function admin_messaging_access($permission = 'administer messages', $account = NULL) {
-  if ( $account === NULL ) {
-    global $user;
-    $account = $user;
-  }
-  if (!$account->uid) { // Disallow anonymous access, regardless of permissions
-    return FALSE;
-  }
-  if (!user_access($permission, $account)) {
-    return FALSE;
-  }
-  return TRUE;
-}
 
 

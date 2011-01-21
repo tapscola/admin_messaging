@@ -159,7 +159,24 @@ function admin_messaging_compose($user) {
     $sb .= drupal_get_form('admin_messaging_compose_form', $account);
     return $sb;
 }
+/**
+ * @}
+ */
 
+/**
+ * Return autocomplete results for usernames.
+ *
+ * Prevents usernames from being used and/or suggested twice.
+ */
+ function admin_messaging_user_name_autocomplete($uid, $string = '') {
+    $names = array(); 
+    $array = explode(',', $string);
+    // Parse $string and build a list of usernames
+    // The user enters a comma-separated list of names
+    $search = trim(array_pop($array));
+    $matches = array();
+    if ($search != '') {
+       $result = db_query_range ("SELECT u.name FROM {users} u WHERE u.uid = %d 0 AND LOWER (u.name) LIKE LOWER ('%%%s%%')", 'u', 'uid'), $search, 0, 10);
 /**
  * Form submission handler for constructor function admin_messaging_compose_form()
  */

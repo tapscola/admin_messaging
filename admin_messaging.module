@@ -44,7 +44,7 @@ function admin_messaging_menu() {
         'type' => MENU_LOCAL_TASK,
     );  
     // Auto completes available user names & removes duplicates.
-    $items[admin_messages/user_name_autocomplete] = array(
+    $items[user/user_name_autocomplete] = array(
 	'page callback' 	  => 'admin_messaging_user_name_autocomplete',
 	'access arguments' => array('administer users'),
 	'type'			  => MENU_CALLBACK,
@@ -78,6 +78,18 @@ function admin_messaging_compose_form($context, $account) {
         '#type' => 'value',
         '#value' => $account,
     );
+    
+    $form['admin_messaging']['recipient'] = array(
+	'#type' => 'textfield',
+	'#title'  => t('To'),
+	'#description' => t('Separate multiple names with commas.'),
+	'#default_value' => '',
+	'#required'	      => TRUE,
+	'#weight'	      => -10,
+	'#size'	      => 50,
+	'#autocomplete_path' => 'user/user_name_autocomplete',
+	// Do not hardcode #maxlength, make it configurable by number of recipients, not their name length.
+    );	
     // This creates a fieldset for the body:
     $form['message'] = array(
         '#type' => 'fieldset',

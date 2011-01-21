@@ -42,7 +42,14 @@ function admin_messaging_menu() {
         'page arguments' => array(1), // <- userID (from % in node path)
         'access arguments' => array('administer users'),
         'type' => MENU_LOCAL_TASK,
-    );        
+    );  
+    // Auto completes available user names & removes duplicates.
+    $items[admin_messages/user_name_autocomplete] = array(
+	'page callback' 	  => 'admin_messaging_user_name_autocomplete',
+	'access arguments' => array('administer users'),
+	'type'			  => MENU_CALLBACK,
+	'weight'		  => -10,
+     );
 return $items;
 }
 

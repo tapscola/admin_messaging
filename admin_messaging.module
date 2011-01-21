@@ -176,7 +176,21 @@ function admin_messaging_compose($user) {
     $search = trim(array_pop($array));
     $matches = array();
     if ($search != '') {
-       $result = db_query_range ("SELECT u.name FROM {users} u WHERE u.uid = %d 0 AND LOWER (u.name) LIKE LOWER ('%%%s%%')", 'u', 'uid'), $search, 0, 10);
+       $result = db_query_range (db_rewrite_sql("SELECT u.name FROM {users} u WHERE u.uid = %d 0 AND LOWER (u.name) LIKE LOWER ('%%%s%%')", 'u', 'uid'), $search, 0, 10);
+       $prefix = count($array) ? implode(', ', $array) .', ' : '';
+       while ($user = db_fetch_object($result)) {
+         $matches[$prefix . $user->name .", "] = $user->name;
+	      //Commas and quotes in terms are special cases, so encode them.  Use strpos() to check if they exist first because str_replace() is expensive.
+      if (strpos($user->name, ',') !== FALSE || strpos($user->name, '"') !== FALSE) {
+        $name = '"'. str_replace('"', '""', $user->name) .'"';
+      }
+      $matches[$prefix . $name] = check_plain($user->name);
+    }
+  }
+  drupal_json($matches);
+}
+
+ 
 /**
  * Form submission handler for constructor function admin_messaging_compose_form()
  */

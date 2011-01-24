@@ -79,11 +79,10 @@ function admin_messaging_compose_form($context, $account) {
         '#type' => 'value',
         '#value' => $account,
     );
-      $form['admin message']['recipient'] = array(
+     $form['admin_message']['recipient'] = array(
       '#type'               => 'textfield',
       '#title'              => t('To'),
       '#description'        => t('Separate multiple names with commas.'),
-      '#default_value'      => $recipients_string,
       '#required'           => TRUE,
       '#weight'             => -10,
       '#size'               => 50,
@@ -95,6 +94,7 @@ function admin_messaging_compose_form($context, $account) {
         '#type' => 'fieldset',
         '#title' => t('Compose New Message'),
     );
+
     // Textfield for subject of the body
     $form['message']['subject'] = array(
         '#type' => 'textfield',
@@ -178,7 +178,6 @@ function admin_messaging_user_name_autocomplete($string) {
       $names[$name] = $name;
     }
   }
-  // By using user_validate_user we can ensure that names included in $names are at least logisticaly possible.
   // 2: Find the next user name suggestion.
   $fragment = array_pop($names);
   $matches = array();

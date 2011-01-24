@@ -43,14 +43,15 @@ function admin_messaging_menu() {
         'access arguments' => array('administer users'),
         'type' => MENU_LOCAL_TASK,
     );  
-    // Auto completes available user names & removes duplicates.
-    $items[user/user_name_autocomplete] = array(
-	'page callback' 	  => 'admin_messaging_user_name_autocomplete',
-	'access arguments' => array('administer users'),
-	'type'			  => MENU_CALLBACK,
-	'weight'		  => -10,
-     );
-return $items;
+
+  // Auto-completes available user names & removes duplicates.
+  $items['admin_messaging/user-name-autocomplete'] = array(
+    'page callback'    => 'admin_messaging_user_name_autocomplete',
+    'access arguments' => array('administer user messages'),
+    'type'             => MENU_CALLBACK,
+    'weight'           => -10,
+  );
+  return $items;
 }
 
 /**
@@ -78,18 +79,17 @@ function admin_messaging_compose_form($context, $account) {
         '#type' => 'value',
         '#value' => $account,
     );
-    
-    $form['admin_messaging']['recipient'] = array(
-	'#type' => 'textfield',
-	'#title'  => t('To'),
-	'#description' => t('Separate multiple names with commas.'),
-	'#default_value' => '',
-	'#required'	      => TRUE,
-	'#weight'	      => -10,
-	'#size'	      => 50,
-	'#autocomplete_path' => 'user/user_name_autocomplete',
-	// Do not hardcode #maxlength, make it configurable by number of recipients, not their name length.
-    );	
+      $form['admin message']['recipient'] = array(
+      '#type'               => 'textfield',
+      '#title'              => t('To'),
+      '#description'        => t('Separate multiple names with commas.'),
+      '#default_value'      => $recipients_string,
+      '#required'           => TRUE,
+      '#weight'             => -10,
+      '#size'               => 50,
+      '#autocomplete_path'  => 'admin_messaging/user-name-autocomplete',
+      // Do not hardcode #maxlength, make it configurable by number of recipients, not their name length.
+    );
     // This creates a fieldset for the body:
     $form['message'] = array(
         '#type' => 'fieldset',
@@ -159,6 +159,7 @@ function admin_messaging_compose($user) {
     $sb .= drupal_get_form('admin_messaging_compose_form', $account);
     return $sb;
 }
+
 /**
  * @}
  */
@@ -168,28 +169,31 @@ function admin_messaging_compose($user) {
  *
  * Prevents usernames from being used and/or suggested twice.
  */
- function admin_messaging_user_name_autocomplete($uid, $string = '') {
-    $names = array(); 
-    $array = explode(',', $string);
-    // Parse $string and build a list of usernames
-    // The user enters a comma-separated list of names
-    $search = trim(array_pop($array));
-    $matches = array();
-    if ($search != '') {
-       $result = db_query_range (db_rewrite_sql("SELECT u.name FROM {users} u WHERE u.uid = %d 0 AND LOWER (u.name) LIKE LOWER ('%%%s%%')", 'u', 'uid'), $search, 0, 10);
-       $prefix = count($array) ? implode(', ', $array) .', ' : '';
-       while ($user = db_fetch_object($result)) {
-         $matches[$prefix . $user->name .", "] = $user->name;
-	      //Commas and quotes in terms are special cases, so encode them.  Use strpos() to check if they exist first because str_replace() is expensive.
-      if (strpos($user->name, ',') !== FALSE || strpos($user->name, '"') !== FALSE) {
-        $name = '"'. str_replace('"', '""', $user->name) .'"';
-      }
-      $matches[$prefix . $name] = check_plain($user->name);
+function admin_messaging_user_name_autocomplete($string) {
+  $names = array();
+  // 1: Parse $string and build list of valid user names.
+  $fragments = explode(',', $string);
+  foreach ($fragments as $index => $name) {
+    if ($name = trim($name)) {
+      $names[$name] = $name;
     }
   }
-  drupal_json($matches);
+  // By using user_validate_user we can ensure that names included in $names are at least logisticaly possible.
+  // 2: Find the next user name suggestion.
+  $fragment = array_pop($names);
+  $matches = array();
+  if (!empty($fragment)) {
+    $query = _privatemsg_assemble_query('autocomplete', $fragment, $names);
+    $result = db_query_range($query['query'], $fragment, 0, 10);
+    $prefix = count($names) ? implode(", ", $names) .", " : '';
+    // 3: Build proper suggestions and print.
+    while ($user = db_fetch_object($result)) {
+      $matches[$prefix . $user->name .", "] = $user->name;
+    }
+  }
+  // convert to object to prevent drupal bug, see http://drupal.org/node/175361
+  drupal_json((object)$matches);
 }
-
  
 /**
  * Form submission handler for constructor function admin_messaging_compose_form()

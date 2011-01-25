@@ -150,6 +150,10 @@ function admin_messaging_compose($user) {
     if ($user->uid <= 0)
         return t('User ID must be an integer.');
     $account = $user;
+    foreach ($account as $user->name ) {
+       $account = user_load($user['uid']);
+       $emails[] = $account->mail;
+     }
     if (empty($account))
         return t('No such user found.');
     $to = $account->mail;

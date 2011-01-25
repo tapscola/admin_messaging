@@ -147,10 +147,11 @@ function admin_messaging_compose_form($context, $account) {
  *  HTML.
  */
 function admin_messaging_compose($user) {
-    $account = array($user);
+global $user;
+    $account = $user;
     foreach ($account as $account) {
        $account = user_load($user-> uid);
-       $to = $account->mail;
+       $to[] = $user->mail;
       if ($user->uid <= 0)
         return t('User ID must be an integer.');
      }  

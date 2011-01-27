@@ -139,16 +139,23 @@ function admin_messaging_compose_form($context, $account) {
 }
 
 /**
- * Form constructor function with the fields interface
+ * Form constructor function with the fields interface for autocomplete users
  */
 function admin_messaging_user_compose_form($context, $account) {
     // This is a value only -- equivalent to a hidden field, except
     // that it is never rendered into the HTML.
+    $form = array;
     $form['to'] = array(
         '#type' => 'value',
         '#value' => $account,
-    );   
-     $form['admin_messaging']['recipient'] = array(
+    ); 
+    
+    // This creates a fieldset for the body:
+    $form['admin_messages'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Compose New Message For Users'),
+    );
+     $form['admin_messages']['recipient'] = array(
       '#type'               => 'textfield',
       '#title'              => t('To'),
       '#description'        => t('Separate multiple names with commas.'),
@@ -157,16 +164,10 @@ function admin_messaging_user_compose_form($context, $account) {
       '#size'               => 50,
       '#autocomplete_path'  => 'admin/settings/user/user-name-autocomplete',
       // Do not hardcode #maxlength, make it configurable by number of recipients, not their name length.
-    );    
-    
-    // This creates a fieldset for the body:
-    $form['message'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Compose New Message'),
-    );
+    );   
 
     // Textfield for subject of the body
-    $form['message']['subject'] = array(
+    $form['admin_messages']['subject'] = array(
         '#type' => 'textfield',
         '#title' => t('Subject'),
         '#size' => 50,
@@ -175,7 +176,7 @@ function admin_messaging_user_compose_form($context, $account) {
         '#description' => t('The subject of the message.'),
     );
     // Text area for the body.
-    $form['message']['body'] = array(
+    $form['admin_messages']['body'] = array(
         '#type' => 'textarea',
         '#title' => t('Message'),
         '#cols' => 50,

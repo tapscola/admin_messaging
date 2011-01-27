@@ -36,21 +36,30 @@ function admin_messaging_perm() {
 function admin_messaging_menu() {
     // User ID must pass:
     //$items = array();
-    $items['user/%user/compose'] = array(
+   $items['user/%user/compose'] = array(
         'title' => 'Admin Message',
         'page callback' => 'admin_messaging_compose',
         'page arguments' => array(1), // <- userID (from % in node path)
         'access arguments' => array('administer users'),
         'type' => MENU_LOCAL_TASK,
-    );        
-return $items;
+    );  
+
+   // Auto-completes available user names & removes duplicates.
+   $items['admin/settings/user-name-autocomplete'] = array(
+        'title'                 => 'Admin Messages',
+        'page callback'    => 'admin_messaging_compose',
+	//'page arguments' => array(2),
+        'access arguments' => array('administer admin_messaging'),
+        'weight'           => -10,
+     );
+  return $items;
 }
 
 /**
  * Implementation of hook_user().
  */
 function admin_messaging_user($op, &$edit, &$account, $category) {
-   if ($op == 'view' && user_access('administer users')) {
+   if ($op == 'view' && user_access('administer admin_messaging')) {
        // Create the outer "block"
         $account->content['admin_messaging'] = array(
             '#type' => 'user_profile_category',
@@ -71,11 +80,25 @@ function admin_messaging_compose_form($context, $account) {
         '#type' => 'value',
         '#value' => $account,
     );
+   
+     $form['admin_messaging']['recipient'] = array(
+      '#type'               => 'textfield',
+      '#title'              => t('To'),
+      '#description'        => t('Separate multiple names with commas.'),
+      '#required'           => TRUE,
+      '#weight'             => -10,
+      '#size'               => 50,
+      '#autocomplete_path'  => 'admin/settings/user-name-autocomplete',
+      // Do not hardcode #maxlength, make it configurable by number of recipients, not their name length.
+    );
+    }
+    
     // This creates a fieldset for the body:
     $form['message'] = array(
         '#type' => 'fieldset',
         '#title' => t('Compose New Message'),
     );
+
     // Textfield for subject of the body
     $form['message']['subject'] = array(
         '#type' => 'textfield',
@@ -141,6 +164,40 @@ function admin_messaging_compose($user) {
     return $sb;
 }
 
+/**
+ * @}
+ */
+
+/**
+ * Return autocomplete results for usernames.
+ *
+ * Prevents usernames from being used and/or suggested twice.
+ */
+function admin_messaging_user_name_autocomplete($string) {
+  $names = array();
+  // 1: Parse $string and build list of valid user names.
+  $fragments = explode(',', $string);
+  foreach ($fragments as $index => $name) {
+    if ($name = trim($name)) {
+      $names[$name] = $name;
+    }
+  }
+  // 2: Find the next user name suggestion.
+  $fragment = array_pop($names);
+  $matches = array();
+  if (!empty($fragment)) {
+    $query = _privatemsg_assemble_query('autocomplete', $fragment, $names);
+    $result = db_query_range($query['query'], $fragment, 0, 10);
+    $prefix = count($names) ? implode(", ", $names) .", " : '';
+    // 3: Build proper suggestions and print.
+    while ($user = db_fetch_object($result)) {
+      $matches[$prefix . $user->name .", "] = $user->name;
+    }
+  }
+  // convert to object to prevent drupal bug, see http://drupal.org/node/175361
+  drupal_json((object)$matches);
+}
+ 
 /**
  * Form submission handler for constructor function admin_messaging_compose_form()
  */

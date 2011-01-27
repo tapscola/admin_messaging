@@ -78,8 +78,7 @@ function admin_messaging_compose_form($context, $account) {
     $form['to'] = array(
         '#type' => 'value',
         '#value' => $account,
-    );
-   
+    );   
      $form['admin_messaging']['recipient'] = array(
       '#type'               => 'textfield',
       '#title'              => t('To'),
@@ -91,64 +90,6 @@ function admin_messaging_compose_form($context, $account) {
       // Do not hardcode #maxlength, make it configurable by number of recipients, not their name length.
     );    
     
-    // This creates a fieldset for the body:
-    $form['message'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Compose New Message'),
-    );
-
-    // Textfield for subject of the body
-    $form['message']['subject'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Subject'),
-        '#size' => 50,
-        '#maxlengh' => 255,
-        '#required' => true,
-        '#description' => t('The subject of the message.'),
-    );
-    // Text area for the body.
-    $form['message']['body'] = array(
-        '#type' => 'textarea',
-        '#title' => t('Message'),
-        '#cols' => 50,
-        '#rows' => 5,
-        '#required' => true,
-        '#description' => t('The body of the message.'),
-    );
-    // Creates a fieldset for details
-    // $form['details'] = array(
-        // '#type' => 'fieldset',
-        // '#title' => t("Details"),
-    // );
-    // Creates a fieldset for sending options
-	$method_list = messaging_method_list();
-	$method_list['debug'] = 'Debug';
-	$method_list['user'] = 'User Prefered';
-	$form['method'] = array (
-		'#type' => 'select' ,
-		'#title' => t('Select Sending Method') ,
-		 '#rows' => 5 ,
-		'#options' => $method_list, //the option list called from the messaging list, alternate '#options' => array(email => 'Email', web => 'Web') ),
-		'#default_value' => messaging_method_default(),
-	) ;
-  // submit button:
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Send Mail'),
-  );
-  return $form;
-}
-/**
- * Form constructor function with the fields interface
- */
-function admin_messaging_user_composes($context, $account) {
-    // This is a value only -- equivalent to a hidden field, except
-    // that it is never rendered into the HTML.
-    $form['to'] = array(
-        '#type' => 'value',
-        '#value' => $account,
-    );
-
     // This creates a fieldset for the body:
     $form['message'] = array(
         '#type' => 'fieldset',
@@ -216,7 +157,7 @@ function admin_messaging_compose($user) {
     $sb = '<p>'
         .t('Send message to user', array('@email' => $to))
         .'</p>';
-    $sb .= drupal_get_form('admin_messaging_user_composes', $account);
+    $sb .= drupal_get_form('admin_messaging_compose_form', $account);
     return $sb;
 }
 

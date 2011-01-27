@@ -47,7 +47,7 @@ function admin_messaging_menu() {
    // Auto-completes available user names & removes duplicates.
    $items['admin/settings/user-name-autocomplete'] = array(
         'title'                 => 'Admin Messages',
-        'page callback'    => 'admin_messaging_compose',
+        'page callback'    => 'admin_messaging_user_name_autocomplete',
 	//'page arguments' => array(2),
         'access arguments' => array('administer admin_messaging'),
         'weight'           => -10,

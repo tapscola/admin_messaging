@@ -45,9 +45,9 @@ function admin_messaging_menu() {
     );  
 
    // Auto-completes available user names & removes duplicates.
-   $items['admin/settings/user-name-autocomplete'] = array(
+   $items['admin/settings/user/user-name-autocomplete'] = array(
         'title'                 => 'Admin Messages',
-        'page callback'    => 'admin_messaging_user_name_autocomplete',
+        'page callback'    => 'admin_messaging_user_autocomplete',
 	//'page arguments' => array(2),
         'access arguments' => array('administer admin_messaging'),
         'weight'           => -10,
@@ -88,7 +88,7 @@ function admin_messaging_compose_form($context, $account) {
       '#required'           => TRUE,
       '#weight'             => -10,
       '#size'               => 50,
-      '#autocomplete_path'  => 'admin/settings/user-name-autocomplete',
+      '#autocomplete_path'  => 'admin/settings/user/user-name-autocomplete',
       // Do not hardcode #maxlength, make it configurable by number of recipients, not their name length.
     );
     }
@@ -139,7 +139,6 @@ function admin_messaging_compose_form($context, $account) {
     '#value' => t('Send Mail'),
   );
   return $form;
-}
 
 /**
  * Compose a message.
@@ -173,7 +172,7 @@ function admin_messaging_compose($user) {
  *
  * Prevents usernames from being used and/or suggested twice.
  */
-function admin_messaging_user_name_autocomplete($string) {
+function admin_messaging_user_autocomplete($string) {
   $names = array();
   // 1: Parse $string and build list of valid user names.
   $fragments = explode(',', $string);

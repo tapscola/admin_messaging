@@ -43,10 +43,10 @@ function admin_messaging_menu() {
         'access arguments' => array('administer users'),
         'type' => MENU_LOCAL_TASK,
     );  
-   $items['admin/settings/admin-messaging-multiple'] = array(
+   $items['admin/settings/admin-messaging-multiple/%user'] = array(
     'title' => 'Admin Messages',
     'description' => 'Send Message To Users.',
-    'page callback' => 'admin_messaging_multiple_compose',
+    'page callback' => 'drupal_get_form',
     'page arguments' => array('admin_messaging_multiple_compose'),
     'access arguments' => array('send messages to users'),
     'file' => 'admin_messaging.admin.inc',

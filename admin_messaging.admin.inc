@@ -31,7 +31,7 @@ function admin_messaging_multiple_form($context, $account) {
       '#required'           => TRUE,
       '#weight'             => -10,
       '#size'               => 50,
-      '#autocomplete_path'  => 'admin/settings/admin-messaging-multiple',
+      '#autocomplete_path'  => 'admin/settings/admin_messaging_multiple_autocomplete',
       // Do not hardcode #maxlength, make it configurable by number of recipients, not their name length.
     );   
 

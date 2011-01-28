@@ -27,7 +27,7 @@ function admin_messaging_help($path, $arg) {
  * Implementation of hook_perm().
  */
 function admin_messaging_perm() {
-  return array('administer admin_messaging', 'send messages to users');
+  return array('administer admin_messaging', 'send messages to users', 'administer multiple messages');
 }
 
 /**
@@ -47,10 +47,21 @@ function admin_messaging_menu() {
     'title' => 'Admin Messages',
     'description' => 'Send Message To Users.',
     'page callback' => 'admin_messaging_multiple_compose',
-    'page arguments' => array('admin_messaging_multiple_compose'),
+    'page arguments' => array('admin_messaging_multiple_form'),
     'access arguments' => array('send messages to users'),
     'file' => 'admin_messaging.admin.inc',
   );
+        // Auto-completes available user names & removes duplicates.
+    $items['admin/settings/admin_messaging_multiple_autocomplete'] = array(
+       'title' => 'Multiple Messaging',
+       'page callback'    => 'admin_message_multiple_autocomplete',
+       'page arguments' => array('admin_messaging_multiple_form'),
+       'access arguments' => array('administer multiple messages'),
+       'file' => 'admin_messaging.admin.inc',
+      // 'type'             => MENU_CALLBACK,
+       'weight'           => -10,
+ );
+
   return $items;
 }
 
@@ -161,8 +172,8 @@ function admin_messaging_compose($user) {
  */
 function admin_messaging_multiple_compose($user, $accounts) {
 global $user;
-foreach ($account as $account)
-    $account = user;
+//foreach ($account as $account)
+    $account = $user;
     $to = $account->mail;
     $sb = '<p>'
         .t('Send message to user', array('@email' => $to))
@@ -170,8 +181,6 @@ foreach ($account as $account)
     $sb .= drupal_get_form('admin_messaging_multiple_form', $account);
     return $sb;
 }
-
-
 
 /**
  * @}
@@ -182,8 +191,8 @@ foreach ($account as $account)
  *
  * Prevents usernames from being used and/or suggested twice.
  */
-function admin_messaging_user_autocomplete($string) {
-  $names = array();
+function admin_message_multiple_autocomplete($string, $user) {
+$names = array();
   // 1: Parse $string and build list of valid user names.
   $fragments = explode(',', $string);
   foreach ($fragments as $index => $name) {

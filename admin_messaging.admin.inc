@@ -74,5 +74,5 @@ function admin_messaging_multiple_form($context, $account) {
     '#type' => 'submit',
     '#value' => t('Send Message'),
   );
-  return $form;
+  return ($form);
 }

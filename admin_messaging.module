@@ -43,10 +43,10 @@ function admin_messaging_menu() {
         'access arguments' => array('administer users'),
         'type' => MENU_LOCAL_TASK,
     );  
-   $items['admin/settings/admin-messaging-multiple/%user'] = array(
+   $items['admin/settings/admin-messaging-multiple'] = array(
     'title' => 'Admin Messages',
     'description' => 'Send Message To Users.',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'admin_messaging_multiple_compose',
     'page arguments' => array('admin_messaging_multiple_compose'),
     'access arguments' => array('send messages to users'),
     'file' => 'admin_messaging.admin.inc',
@@ -127,8 +127,6 @@ function admin_messaging_compose_form($context, $account) {
   return $form;
 }
 
-
-
 /**
  * Compose a message.
  * Creating form neccessary to compose message.
@@ -161,12 +159,10 @@ function admin_messaging_compose($user) {
  * @return
  *  HTML.
  */
-function admin_messaging_multiple_compose($user) {
-    if ($user->uid <= 0)
-        return t('User ID must be an integer.');
-    $account = $user;
-    if (empty($account))
-        return t('No such user found.');
+function admin_messaging_multiple_compose($user, $accounts) {
+global $user;
+foreach ($account as $account)
+    $account = user;
     $to = $account->mail;
     $sb = '<p>'
         .t('Send message to user', array('@email' => $to))

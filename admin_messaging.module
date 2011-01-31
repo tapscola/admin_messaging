@@ -167,8 +167,14 @@ function admin_messaging_compose($user) {
  * @return
  *  HTML.
  */
-function admin_messaging_multiple_compose($user, $accounts) {
-global $user;
+function admin_messaging_multiple_compose($user, $accounts, $address) {
+global $user;      
+// Generate the list users that this message will be sent to.
+      $addresses = array_filter(explode(',', $email['email']));
+      $addresses_final = array();
+      foreach ($addresses as $address) {
+        $address = trim($address);
+	}
 //foreach ($account as $account)
     $account = $user;
     $to = $account->mail;

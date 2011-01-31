@@ -194,27 +194,23 @@ global $user;
  *
  * Prevents usernames from being used and/or suggested twice.
  */
-function admin_message_multiple_autocomplete($string) {
-$names = array();
-  // Building list of valid user names.
-  $fragments = explode(',', $string);
-  foreach ($fragments as $index => $name) {
-    if ($name = trim($name)) {
-      $names[$name] = $name;
+function admin_message_multiple_autocomplete($uid, $string = '') {
+    $names = array(); 
+    $array = explode(',', $string);
+    $search = trim(array_pop($array));
+    $matches = array();
+    if ($search != '') {
+       $result = db_query_range (db_rewrite_sql("SELECT u.name FROM {users} u WHERE u.uid = %d 0 AND LOWER (u.name) LIKE LOWER ('%%%s%%')", 'u', 'uid'), $search, 0, 10);
+       $prefix = count($array) ? implode(', ', $array) .', ' : '';
+       while ($user = db_fetch_object($result)) {
+         $matches[$prefix . $user->name .", "] = $user->name;
+	  if (strpos($user->name, ',') !== FALSE || strpos($user->name, '"') !== FALSE) {
+        $name = '"'. str_replace('"', '""', $user->name) .'"';
+      }
+      $matches[$prefix . $name] = check_plain($user->name);
     }
   }
-  // Finding next user name suggestion.
-  $fragment = array_pop($names);
-  $matches = array();
-  if (!empty($fragment)) {
-    $query = admin_messaging_multiple_query('autocomplete', $fragment, $names);
-    $result = db_query_range($query['query'], $fragment, 0, 10);
-    $prefix = count($names) ? implode(", ", $names) .", " : '';
-    while ($user = db_fetch_object($result)) {
-      $matches[$prefix . $user->name .", "] = $user->name;
-    }
-  }
-    drupal_json((object)$matches);
+  drupal_json((object)$matches);
 }
  
 /**
@@ -249,146 +245,6 @@ function admin_messaging_compose_form_submit($form, &$form_state) {
    drupal_set_message(t('Sent message with result: %result', array('%result' => $result ? 'OK' : 'Error'))); /**/
 }
 
-
-/**
- * Generates a query based on a query id.
- *
- * @param $query
- *   Either be a string ('some_id') or an array('group_name', 'query_id'),
- * @return
- *    Array with the keys query and count. count can be used to count the
- *    elements which would be returned by query. count can be used together
- *    with pager_query().
- *
- * @ingroup sql
- */
-function admin_messaging_multiple_query($query) {
-  if (is_array($query)) {
-    $query_id = $query[0];
-    $query_group = $query[1];
-  }
-  else {
-    $query_id = $query;
-    $query_group = 'privatemsg';
-  }
-
-  $SELECT = array();
-  $INNER_JOIN = array();
-  $WHERE = array();
-  $GROUP_BY = array();
-  $HAVING   = array();
-  $ORDER_BY = array();
-  $QUERY_ARGS = array('select' => array(), 'where' => array(), 'join' => array(), 'having' => array());
-  $primary_table = '';
-
-  $fragments = array(
-    'select'      => $SELECT,
-    'inner_join'  => $INNER_JOIN,
-    'where'       => $WHERE,
-    'group_by'    => $GROUP_BY,
-    'having'      => $HAVING,
-    'order_by'    => $ORDER_BY,
-    'query_args'  => $QUERY_ARGS,
-    'primary_table'  => $primary_table,
-  );
-
-  /**
-   * Begin: dynamic arguments
-   */
-  $args = func_get_args();
-  unset($args[0]);
-  // we do the merge because we call call_user_func_array and not drupal_alter
-  // this is necessary because otherwise we would not be able to use $args correctly (otherwise it doesnt unfold)
-  $alterargs = array(&$fragments);
-  $query_function = $query_group .'_sql_'. $query_id;
-  if (!empty($args)) {
-    $alterargs = array_merge($alterargs, $args);
-  }
-  /**
-   * END: Dynamic arguments
-   */
-  if (!function_exists($query_function)) {
-    drupal_set_message(t('Query function %function does not exist', array('%function' => $query_function)), 'error');
-    return FALSE;
-  }
-  call_user_func_array($query_function, $alterargs);
-
-  array_unshift($alterargs, $query_function);
-  call_user_func_array('drupal_alter', $alterargs);
-
-  $SELECT = $fragments['select'];
-  $INNER_JOIN = $fragments['inner_join'];
-  $WHERE = $fragments['where'];
-  $GROUP_BY = $fragments['group_by'];
-  $HAVING   = $fragments['having'];
-  $ORDER_BY = $fragments['order_by'];
-  $QUERY_ARGS = $fragments['query_args'];
-  $primary_table = $fragments['primary_table'];
-
-  // pgsql has a case sensitive LIKE - replace it with ILIKE. see http://drupal.org/node/462982
-  if ($GLOBALS['db_type'] == 'pgsql') {
-    $WHERE = str_replace('LIKE', 'ILIKE', $WHERE);
-  }
-
-  if (empty($primary_table)) {
-    $primary_table = '{privatemsg} pm';
-  }
-
-  // Perform the whole query assembly only if we have something to select.
-  if (!empty($SELECT)) {
-    $str_select = implode(", ", $SELECT);
-    $query = "SELECT {$str_select} FROM ". $primary_table;
-
-    // Also build a count query which can be passed to pager_query to get a "page count" as that does not play well with queries including "GROUP BY".
-    // In most cases,  "COUNT(*)" is enough to get the count query, but in queries involving a GROUP BY, we want a count of the number of groups we have, not the count of elements inside each group.
-    // So we test if there is GROUP BY and if there is, count the number of distinct groups. If not, we go the normal wal and do a plain COUNT(*).
-    if (!empty($GROUP_BY)) {
-      // PostgreSQL does not support COUNT(sometextfield, someintfield), so I'm only using the first one
-      // Works fine for thread_id/list but may generate an error when a more complex GROUP BY is used.
-      $str_group_by_count = current($GROUP_BY);
-      $count = "SELECT COUNT(DISTINCT {$str_group_by_count}) FROM ". $primary_table;
-    }
-    else {
-      $count = "SELECT COUNT(*) FROM ". $primary_table;
-    }
-
-    if (!empty($INNER_JOIN)) {
-      $str_inner_join = implode(' ', $INNER_JOIN);
-      $query .= " {$str_inner_join}";
-      $count .= " {$str_inner_join}";
-    }
-    if (!empty($WHERE)) {
-      $str_where = '('. implode(') AND (', $WHERE) .')';
-      $query .= " WHERE {$str_where}";
-      $count .= " WHERE {$str_where}";
-    }
-    if (!empty($GROUP_BY)) {
-      $str_group_by = ' GROUP BY '. implode(", ", $GROUP_BY) ;
-      $query .= " {$str_group_by}";
-    }
-    if (!empty($HAVING)) {
-      $str_having = '('. implode(') AND (', $HAVING) .')';
-      $query .= " HAVING {$str_having}";
-      // queries containing a HAVING break the count query on pgsql.
-      // In this case, use the subquery method as outlined in http://drupal.org/node/303087#comment-1370752 .
-      // The subquery method will work for all COUNT queries, but it is thought to be much slower, so we are only using it where other cross database approaches fail.
-      $count = 'SELECT COUNT(*) FROM ('. $query .') as count';
-    }
-    if (!empty($ORDER_BY)) {
-      $str_order_by = ' ORDER BY '. implode(", ", $ORDER_BY) ;
-      $query .= " {$str_order_by}";
-    }
-    $QUERY_ARGS = array_merge($QUERY_ARGS['select'], $QUERY_ARGS['join'], $QUERY_ARGS['where'], $QUERY_ARGS['having']);
-    if (!empty($QUERY_ARGS)) {
-      _db_query_callback($QUERY_ARGS, TRUE);
-      $query = preg_replace_callback(DB_QUERY_REGEXP, '_db_query_callback', $query);
-      _db_query_callback($QUERY_ARGS, TRUE);
-      $count = preg_replace_callback(DB_QUERY_REGEXP, '_db_query_callback', $count);
-    }
-    return array('query' => $query, 'count' => $count);
-  }
-  return FALSE;
-}
 
 
 

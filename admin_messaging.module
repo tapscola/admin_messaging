@@ -194,23 +194,16 @@ global $user;
  *
  * Prevents usernames from being used and/or suggested twice.
  */
-function admin_message_multiple_autocomplete($uid, $string = '') {
-    $names = array(); 
-    $array = explode(',', $string);
-    $search = trim(array_pop($array));
-    $matches = array();
-    if ($search != '') {
-       $result = db_query_range (db_rewrite_sql("SELECT u.name FROM {users} u WHERE u.uid = %d 0 AND LOWER (u.name) LIKE LOWER ('%%%s%%')", 'u', 'uid'), $search, 0, 10);
-       $prefix = count($array) ? implode(', ', $array) .', ' : '';
-       while ($user = db_fetch_object($result)) {
-         $matches[$prefix . $user->name .", "] = $user->name;
-	  if (strpos($user->name, ',') !== FALSE || strpos($user->name, '"') !== FALSE) {
-        $name = '"'. str_replace('"', '""', $user->name) .'"';
-      }
-      $matches[$prefix . $name] = check_plain($user->name);
+function admin_message_multiple_autocomplete($string = '') {
+  $matches = array();
+  if ($string) {
+    $result = db_query_range("SELECT name FROM {users} WHERE LOWER(name) LIKE LOWER('%s%%')", $string, 0, 10);
+    while ($user = db_fetch_object($result)) {
+      $matches[$user->name] = check_plain($user->name);
     }
   }
-  drupal_json((object)$matches);
+
+  drupal_json($matches);
 }
  
 /**

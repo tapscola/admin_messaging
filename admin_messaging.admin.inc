@@ -76,3 +76,98 @@ function admin_messaging_multiple_form($context, $account) {
   );
   return ($form);
 }
+
+/**
+ * Compose a message.
+ * Creating form neccessary to compose message for.
+ * To be send to multiple users.
+ * @param $to
+ *  The address to send to.
+ * @return
+ *  HTML.
+ */
+function admin_messaging_multiple_compose($user) {
+    global $user;
+    if ($user->uid <= 0)
+        return TRUE;
+    // Create the recipient list.
+    $recipientouta = array();
+    $roles = explode(',', $contact->recipients);
+    foreach ($roles as $r) {
+      if ($r == 4) { // all users
+        $recipients = db_query("SELECT name, mail, uid FROM {users} WHERE status <> %d AND uid > %d", 0, 0);
+        while ($obj = db_fetch_object($recipients)) {
+          $rname = $obj->name;
+          $rmail = $obj->mail;
+          $ruid = $obj->uid;
+          if ($rname != $user->name && !$uidooa[$ruid]) {
+//          if (!$uidooa[$ruid]) {
+            $recipientouta[$rname] = $rmail;
+          }
+        }
+        break;
+      }
+      else {
+        // Get from users_roles, then role -> user.
+        $uids = db_query("SELECT ur.uid FROM {users_roles} ur LEFT JOIN {users} u ON ur.uid = u.uid WHERE ur.rid = %d AND u.status <> %d", $r, 0);
+        while ($obj = db_fetch_object($uids))  {
+          $ruid = $obj->uid;
+          $userobj = db_fetch_object(db_query("SELECT name, mail FROM {users} WHERE uid = %d", $ruid));
+          $rname = $userobj->name;
+          $rmail = $userobj->mail;
+          if (isset($uidooa[$ruid])) {
+            if ($rname != $user->name && !$uidooa[$ruid]) {
+//            if (!$uidooa[$ruid]) {
+              $recipientouta[$rname] = $rmail;
+            }
+          }
+          else {
+            if ($rname != $user->name) {
+              $recipientouta[$rname] = $rmail;
+            }
+          }
+        }
+      }
+	}
+	      $to = $recipientouta[$rname]->mail;
+		$sb = '<p>'
+            .t('Send message to user', array('@email' => $to))
+            .'</p>';
+            $sb .= drupal_get_form('admin_messaging_multiple_form', $account);
+    return $sb;
+  }
+    
+/**
+ * Form submission handler for constructor function admin_messaging_compose_form()
+ */
+function admin_messaging_multiple_form_submit($form, &$form_state) {
+	//print_r($form_state);
+  // $acount = user_load($form_state['values']['to']->uid);
+  global $user;
+  
+  $form_values = $form_state['values'];
+  $account = $form_state['values']['to'];
+  $body = split("\n", $form_state['values']['body']);
+  $body = array_map('trim', $body);  
+  $message = array (
+    'type' => 'push',
+    'subject' => $form_state['values']['subject'],
+		'body' => $body,  
+  );
+	
+	// If method defined force sending method
+	if ($form_state['values']['method'] != 'user')
+		$method = $form_state['values']['method'];
+	else
+		$method = null;	
+	
+	// Set redirect page
+  $form_state['redirect'] = sprintf('admin/settings/admin-messaging-multiple');
+	
+	// send message if user set
+  if ($account) {
+		$result = messaging_message_send_user($account, $message, $method);
+	}
+   drupal_set_message(t('Sent message with result: %result', array('%result' => $result ? 'OK' : 'Error'))); /**/
+}
+

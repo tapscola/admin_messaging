@@ -131,8 +131,9 @@ function admin_messaging_multiple_compose($user) {
         }
       }
 	}
-      foreach ($account as $rname => $rmail); {  	
-	      $to = $$account;
+	    Foreach ($account as $user->name) {
+		if ($account !== $user->uid <= 0)
+	      $to = $account;
 		$sb = '<p>'
             .t('Send message to users', array('@email' => $to))
             .'</p>';

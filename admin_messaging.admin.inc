@@ -91,11 +91,12 @@ function admin_messaging_multiple_compose($user) {
     if ($user->uid <= 0)
         return TRUE;
     // Create the recipient list.
+	$account = $user;
     $recipientouta = array();
     $roles = explode(',', $contact->recipients);
     foreach ($roles as $r) {
-      if ($r == 4) { // all users
-        $recipients = db_query("SELECT name, mail, uid FROM {users} WHERE status <> %d AND uid > %d", 0, 0);
+      if ($r == 2) { // all users
+        $recipients = db_query("SELECT name, mail, uid FROM {users} WHERE status <> %d AND uid > %d", 0, 0);		
         while ($obj = db_fetch_object($recipients)) {
           $rname = $obj->name;
           $rmail = $obj->mail;
@@ -105,6 +106,7 @@ function admin_messaging_multiple_compose($user) {
             $recipientouta[$rname] = $rmail;
           }
         }
+      foreach ($recipients as $rname => $rmail) ;
         break;
       }
       else {
@@ -129,12 +131,14 @@ function admin_messaging_multiple_compose($user) {
         }
       }
 	}
-	      $to = $recipientouta[$rname]->mail;
+      foreach ($account as $rname => $rmail); {  	
+	      $to = $$account;
 		$sb = '<p>'
-            .t('Send message to user', array('@email' => $to))
+            .t('Send message to users', array('@email' => $to))
             .'</p>';
             $sb .= drupal_get_form('admin_messaging_multiple_form', $account);
     return $sb;
+	}
   }
     
 /**

@@ -102,11 +102,11 @@ function admin_messaging_multiple_compose($user) {
                while($account = db_fetch_object($result)) {
                  $recipient_addresses[] = $account->mail;
                   Foreach ($recipient_addresses as $account) {	
-	            $to = $recipient_addresses;
+	            $to = $account->mail;
 		      $sb = '<p>'
                     .t('Send message to users', array('@email' => $to))
                     .'</p>';
-                 $sb .= drupal_get_form('admin_messaging_multiple_form', $recipient_addresses);
+                 $sb .= drupal_get_form('admin_messaging_multiple_form', $account);
     return $sb;
 	}
     }

@@ -1,30 +1,20 @@
 <?php
 // $Id$
 
-/**
- * @file
- * Administrative page callbacks for the admin_messaging module.
- *
- * @ingroup admin_messaging
- */
  
 /**
  * Form constructor function with the fields interface for autocomplete users
  */
-function admin_messaging_multiple_form($context, $account) {
+function admin_messaging_multiple_form($context) {
     // This is a value only -- equivalent to a hidden field, except
     // that it is never rendered into the HTML.
-    $form = array();
-    $form['to'] = array(
-        '#type' => 'value',
-        '#value' => $account,
-    );     
+    $form = array();  
     // This creates a fieldset for the body:
     $form['admin_messages'] = array(
         '#type' => 'fieldset',
         '#title' => t('Compose New Message For Users'),
     );
-     $form['admin_messages']['recipient'] = array(
+     $form['to'] = array(
       '#type'               => 'textfield',
       '#title'              => t('To'),
       '#description'        => t('Separate multiple names with commas.'),
@@ -77,46 +67,22 @@ function admin_messaging_multiple_form($context, $account) {
   return ($form);
 }
 
-/**
- * Compose a message.
- * Creating form neccessary to compose message for.
- * To be send to multiple users.
- * @param $to
- *  The address to send to.
- * @return
- *  HTML.
- */
-function admin_messaging_multiple_compose($user) {
-    //print_r($account);
-    global $user;
-	$recipient_addresses = array();
-	if ($user->uid <= 0)
-        return t('User ID must be an integer.');
-		$account = $user;
-		$result = db_query('SELECT mail FROM {users} WHERE uid > 0');
-               while($account = db_fetch_object($result)) {
-                 $recipient_addresses[] = $account->mail;
-                  Foreach ($recipient_addresses as $account) {	
-	            $to = $account->mail;
-		      $sb = '<p>'
-                    .t('Send message to users', array('@email' => $to))
-                    .'</p>';
-                 $sb .= drupal_get_form('admin_messaging_multiple_form', $account);
-             return $sb;
-	}
-    }
-  }
     
 /**
  * Form submission handler for constructor function admin_messaging_compose_form()
  */
 function admin_messaging_multiple_form_submit($form, &$form_state) {
-	//print_r($form_state);
   // $acount = user_load($form_state['values']['to']->uid);
+	$user_list = explode(',', $form_state['values']['to']);
+	foreach ($user_list as $key => $value) {
+		if ($value == ' ' || $value == null)
+			unset($user_list[$key]);
+	}
+	$account = user_load(array('name' => $user_list[0]));
+	print_r($account);
   global $user;
   
   $form_values = $form_state['values'];
-  $account = $form_state['values']['to'];
   $body = split("\n", $form_state['values']['body']);
   $body = array_map('trim', $body);  
   $message = array (
@@ -138,6 +104,6 @@ function admin_messaging_multiple_form_submit($form, &$form_state) {
   if ($account) {
 		$result = messaging_message_send_user($account, $message, $method);
 	}
-   drupal_set_message(t('Sent message with result: %result', array('%result' => $result ? 'OK' : 'Error'))); /**/
+   drupal_set_message(t('Sent message with result: %result', array('%result' => $result ? 'OK' : 'Error')));
 }
 

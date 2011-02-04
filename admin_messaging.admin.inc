@@ -14,11 +14,6 @@
 function admin_messaging_multiple_form($context, $account) {
     // This is a value only -- equivalent to a hidden field, except
     // that it is never rendered into the HTML.
-	$recipient_addresses = array();
-	  $result = db_query('SELECT mail FROM {users} WHERE uid > 0');
-        while($account = db_fetch_object($result)) {
-          $recipient_addresses[] = $account->mail;
-        }
     $form = array();
     $form['to'] = array(
         '#type' => 'value',
@@ -107,7 +102,7 @@ function admin_messaging_multiple_compose($user) {
                     .t('Send message to users', array('@email' => $to))
                     .'</p>';
                  $sb .= drupal_get_form('admin_messaging_multiple_form', $account);
-    return $sb;
+             return $sb;
 	}
     }
   }

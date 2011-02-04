@@ -14,6 +14,11 @@
 function admin_messaging_multiple_form($context, $account) {
     // This is a value only -- equivalent to a hidden field, except
     // that it is never rendered into the HTML.
+	$recipient_addresses = array();
+	  $result = db_query('SELECT mail FROM {users} WHERE uid > 0');
+        while($account = db_fetch_object($result)) {
+          $recipient_addresses[] = $account->mail;
+        }
     $form = array();
     $form['to'] = array(
         '#type' => 'value',
@@ -87,59 +92,24 @@ function admin_messaging_multiple_form($context, $account) {
  *  HTML.
  */
 function admin_messaging_multiple_compose($user) {
+    //print_r($account);
     global $user;
-    if ($user->uid <= 0)
-        return TRUE;
-    // Create the recipient list.
-	$account = $user;
-    $recipientouta = array();
-    $roles = explode(',', $contact->recipients);
-    foreach ($roles as $r) {
-      if ($r == 2) { // all users
-        $recipients = db_query("SELECT name, mail, uid FROM {users} WHERE status <> %d AND uid > %d", 0, 0);		
-        while ($obj = db_fetch_object($recipients)) {
-          $rname = $obj->name;
-          $rmail = $obj->mail;
-          $ruid = $obj->uid;
-          if ($rname != $user->name && !$uidooa[$ruid]) {
-//          if (!$uidooa[$ruid]) {
-            $recipientouta[$rname] = $rmail;
-          }
-        }
-      foreach ($recipients as $rname => $rmail) ;
-        break;
-      }
-      else {
-        // Get from users_roles, then role -> user.
-        $uids = db_query("SELECT ur.uid FROM {users_roles} ur LEFT JOIN {users} u ON ur.uid = u.uid WHERE ur.rid = %d AND u.status <> %d", $r, 0);
-        while ($obj = db_fetch_object($uids))  {
-          $ruid = $obj->uid;
-          $userobj = db_fetch_object(db_query("SELECT name, mail FROM {users} WHERE uid = %d", $ruid));
-          $rname = $userobj->name;
-          $rmail = $userobj->mail;
-          if (isset($uidooa[$ruid])) {
-            if ($rname != $user->name && !$uidooa[$ruid]) {
-//            if (!$uidooa[$ruid]) {
-              $recipientouta[$rname] = $rmail;
-            }
-          }
-          else {
-            if ($rname != $user->name) {
-              $recipientouta[$rname] = $rmail;
-            }
-          }
-        }
-      }
-	}
-	    Foreach ($account as $user->name) {
-		if ($account !== $user->uid <= 0)
-	      $to = $account;
-		$sb = '<p>'
-            .t('Send message to users', array('@email' => $to))
-            .'</p>';
-            $sb .= drupal_get_form('admin_messaging_multiple_form', $account);
+	$recipient_addresses = array();
+	if ($user->uid <= 0)
+        return t('User ID must be an integer.');
+		$account = $user;
+		$result = db_query('SELECT mail FROM {users} WHERE uid > 0');
+               while($account = db_fetch_object($result)) {
+                 $recipient_addresses[] = $account->mail;
+                  Foreach ($recipient_addresses as $account) {	
+	            $to = $recipient_addresses;
+		      $sb = '<p>'
+                    .t('Send message to users', array('@email' => $to))
+                    .'</p>';
+                 $sb .= drupal_get_form('admin_messaging_multiple_form', $recipient_addresses);
     return $sb;
 	}
+    }
   }
     
 /**

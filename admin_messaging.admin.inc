@@ -66,8 +66,22 @@ function admin_messaging_multiple_form($context) {
   );
   return ($form);
 }
-
-    
+/**
+ * Implements hook_mail_alter().
+ */
+function admin_messaging_mail_alter(&$message) {
+    $append = "\n=======================\n"
+        ."Message sent by the administrator from !site_name (!website). \n"
+        ."If you believe this message to be a case of abuse, \n"
+        ."please contact !site_email.\n";
+    $args = array(
+        '!website' => url('', array('absolute' => true)),
+        '!site_email' => variable_get('site_mail', null),
+        '!site_name' => variable_get('site_name', 'Unknown'),
+    );
+    $message['body'] .= t($append, $args);
+}
+        
 /**
  * Form submission handler for constructor function admin_messaging_compose_form()
  */
@@ -78,8 +92,6 @@ function admin_messaging_multiple_form_submit($form, &$form_state) {
 		if ($value == ' ' || $value == null)
 			unset($user_list[$key]);
 	}
-	$account = user_load(array('name' => $user_list[0]));
-	print_r($account);
   global $user;
   
   $form_values = $form_state['values'];
@@ -98,12 +110,17 @@ function admin_messaging_multiple_form_submit($form, &$form_state) {
 		$method = null;	
 	
 	// Set redirect page
-  $form_state['redirect'] = sprintf('admin/settings/admin-messaging-multiple');
+  // $form_state['redirect'] = sprintf('admin/settings/admin-messaging-multiple');
 	
 	// send message if user set
-  if ($account) {
+  // if ($account) 
+  foreach ($user_list as $key => $value) {
+		$account = user_load(array('name' => trim($value)));
+		// print_r($account);
 		$result = messaging_message_send_user($account, $message, $method);
 	}
-   drupal_set_message(t('Sent message with result: %result', array('%result' => $result ? 'OK' : 'Error')));
+   //}
+	   
+    drupal_set_message(t('%result', array('%result' => $result ? 'Message sent successfully' : 'There was an error message sending failed')));
 }
 
